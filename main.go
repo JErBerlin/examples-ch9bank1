@@ -1,6 +1,8 @@
 package main
 
 import (
+	"sync"
+
 	"github.com/jerberlin/examples-ch9bank1/bank"
 )
 
@@ -8,15 +10,20 @@ func main() {
 	balance := bank.Balance()
 	println("Initial balance: ", balance)
 
-	for i := 1; i <= 100; i++ {
+	var wg sync.WaitGroup
+
+	wg.Add(1000000)
+	for i := 1; i <= 1000000; i++ {
 		go func() {
 			// add some fixed amount
 			amount := 1
 			bank.Deposit(amount)
+			wg.Done()
 		}()
 	}
+	wg.Wait()
 
-	// check final balance: should be 100
+	// check final balance: should be 1M
 	balance = bank.Balance()
 	println("Final balance: ", balance)
 }
