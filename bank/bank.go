@@ -1,27 +1,26 @@
 package bank
 
-var deposits = make(chan int) // to send money to the deposit
-var balances = make(chan int) // to receive the balance of the deposit
+var (
+	deposit    func(int)
+	getBalance func() int
+)
 
 // Deposit sends an amount to be added to the balance
-func Deposit(amount int) { deposits <- amount }
+func Deposit(amount int) { deposit(amount) } // call the closure buit at init
 
 // Balance returns the current balance
-func Balance() int { return <-balances }
+func Balance() int { return getBalance() } // call the closure built at init
 
 // teller is the monitor goroutine, confining var balance.
-func teller() {
-	var balance int
-	for {
-		select {
-		case amount := <-deposits:
-			balance += amount
-		case balances <- balance:
-		}
-	}
+func teller() (func(int), func() int) {
+	var balance int // balance will be captured and hence be persisted
+
+	write := func(amount int) { balance += amount }
+	read := func() int { return balance }
+
+	return write, read
 }
 
 func init() {
-	go teller() // start monitor goroutine
-
+	deposit, getBalance = teller() // build the closures through teller()
 }

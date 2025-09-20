@@ -8,12 +8,15 @@ func main() {
 	balance := bank.Balance()
 	println("Initial balance: ", balance)
 
-	// add some fixed amount
-	amount := 100
-	bank.Deposit(amount)
-	println("Add the amount: ", amount)
+	for i := 1; i <= 100; i++ {
+		go func() {
+			// add some fixed amount
+			amount := 1
+			bank.Deposit(amount)
+		}()
+	}
 
-	// check final balance
+	// check final balance: should be 100
 	balance = bank.Balance()
 	println("Final balance: ", balance)
 }
